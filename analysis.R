@@ -1,14 +1,15 @@
+library(tidyverse)
 library(mapdeck)
 library(sf)
 library(geojsonsf)
 
-## https://github.com/cydalytics/HK_Properties_Price_Distribution
-## https://wcmbishop.github.io/rayshader-demo/
-key <- Sys.getenv("MAPBOX_KEY")
+## Mapdeck uses Mapbox maps, and to use Mapbox you need an access token.
+## https://docs.mapbox.com/help/how-mapbox-works/access-tokens/
+key <- "YOUR_MAPBOX_ACCESS_TOKEN"
 
-colnames(sf)
 ## sf <- geojson_sf("https://github.com/vecinosdela80/lotesanuncio/raw/master/LotesAreaAnuncio.geojson")
-sf <- geojson_sf("./ZGH_2020.geojson")
+sf <- geojson_sf("https://github.com/vecinosdela80/zgh_analisis/raw/master/ZGH_2020.geojson")
+colnames(sf)
 
 normalize <- function(x) {
     return ((x - min(x)) / (max(x) - min(x)))
@@ -16,7 +17,7 @@ normalize <- function(x) {
 
 x <- sf$VALOR_M2 %>% as.numeric
 
-hist(normalize(x))
+mean(sf$VALOR_M2)
 
 quantiles <- normalize(x) %>% quantile(seq(0,1,0.2))
 x <- normalize(x)
@@ -26,16 +27,14 @@ sf$color <- dplyr::case_when(
                        x >= quantiles[[3]] &  x < quantiles[[4]] ~ sprintf("%s - %s", names(quantiles)[3],names(quantiles)[4]),
                        x >= quantiles[[4]] &  x < quantiles[[5]] ~ sprintf("%s - %s", names(quantiles)[4],names(quantiles)[5]),
                        x >= quantiles[[5]] &  x <= quantiles[[6]] ~ sprintf("%s - %s", names(quantiles)[5],names(quantiles)[6])
-          ##,
-          ##  x >= quantiles[[6]] &  x < quantiles[[7]] ~ names(quantiles)[6],
-          ##  x >= quantiles[[7]] &  x < quantiles[[8]] ~ names(quantiles)[7],
-          ##  x >= quantiles[[8]] &  x < quantiles[[9]] ~ names(quantiles)[8],
-          ##  x >= quantiles[[9]] &  x < quantiles[[10]] ~ names(quantiles)[9]
        )
 
 e <- factor(sf$color)
 levels(e) <- exp(1:5)
 sf$e <- (e %>% as.character %>% as.numeric) * 3
+
+## si no tienen un navegador por defecto
+## options(browser="/usr/sbin/brave")
 
 mapdeck(token = key) %>%
     add_polygon(
@@ -95,14 +94,7 @@ mapdeck(token = key) %>%
 
 
 ##
-starwars %>%
-    select(name:mass, gender, species) %>%
-    mutate(
-        type = case_when(
-            height > 200 | mass > 200 ~ "large",
-            species == "Droid"        ~ "robot",
-            TRUE                      ~ "other"
-        )
-    )
 
-
+## References
+## https://github.com/cydalytics/HK_Properties_Price_Distribution
+## https://wcmbishop.github.io/rayshader-demo/
