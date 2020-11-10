@@ -8,8 +8,7 @@ library(geojsonsf)
 key <- "YOUR_MAPBOX_ACCESS_TOKEN"
 
 ## sf <- geojson_sf("https://github.com/vecinosdela80/lotesanuncio/raw/master/LotesAreaAnuncio.geojson")
-sf <- geojson_sf("https://github.com/vecinosdela80/zgh_analisis/raw/master/ZGH_2020.geojson")
-colnames(sf)
+## sf <- geojson_sf("https://github.com/vecinosdela80/zgh_analisis/raw/master/ZGH_2020.geojson")
 
 normalize <- function(x) {
     return ((x - min(x)) / (max(x) - min(x)))
@@ -92,8 +91,22 @@ mapdeck(token = key) %>%
       , elevation = "e"
     )
 
-
 ##
+sf <- geojson_sf("https://github.com/vecinosdela80/zgh_analisis/raw/master/lotes_anuncio_zgh.geojson")
+colnames(sf)
+
+## Indexación desde 2016 a hoy
+## Lo que pagarían hoy por metro cuadrado de terreno en la compra de predios
+porcentaje_inc_ivp <- 0.151670758326767 + 1
+sf <- sf %>% mutate(valor_hoy=ZGH2016*porcentaje_inc_ivp)
+
+quantile(sf$valor_hoy,na.rm = TRUE)
+
+options(browser="/usr/sbin/brave")
+library(mapview)
+sf %>%
+    mapview(zcol = "valor_hoy")
+
 
 ## References
 ## https://github.com/cydalytics/HK_Properties_Price_Distribution
